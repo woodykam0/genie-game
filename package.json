@@ -1,0 +1,17 @@
+{
+  "name": "genie-game",
+  "version": "1.0.0",
+  "description": "廣大中學週會 - 神燈遊戲：自我實踐 (學生端與教師端資料同步版)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
