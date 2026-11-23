@@ -14,13 +14,24 @@ app.use(cors());
 app.use(express.json());
 
 // 確保資料目錄存在
-if (!fs.existsSync(path.dirname(DATA_FILE))) {
-  fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
+try {
+  const dataDir = path.dirname(DATA_FILE);
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+    console.log('Created data directory:', dataDir);
+  }
+} catch (e) {
+  console.error('Failed to create data directory:', e.message);
 }
 
 // 初始化資料檔
-if (!fs.existsSync(DATA_FILE)) {
-  fs.writeFileSync(DATA_FILE, '[]', 'utf8');
+try {
+  if (!fs.existsSync(DATA_FILE)) {
+    fs.writeFileSync(DATA_FILE, '[]', 'utf8');
+    console.log('Initialized data file:', DATA_FILE);
+  }
+} catch (e) {
+  console.error('Failed to initialize data file:', e.message);
 }
 
 // 讀取所有提交
@@ -29,6 +40,7 @@ function readSubmissions() {
     const raw = fs.readFileSync(DATA_FILE, 'utf8');
     return JSON.parse(raw);
   } catch (e) {
+    console.error('Read submissions error:', e.message);
     return [];
   }
 }
@@ -83,6 +95,17 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// 全域錯誤捕捉
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err.message);
+  console.error(err.stack);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 app.listen(PORT, () => {
   console.log(`Genie Game server listening on http://localhost:${PORT}`);
+  console.log(`Data file: ${DATA_FILE}`);
 });
