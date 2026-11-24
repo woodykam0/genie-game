@@ -640,6 +640,13 @@
                         <!-- List Inserted -->
                     </div>
                 </div>
+
+                <!-- 關閉並再次抽籤按鈕 -->
+                <div class="flex justify-center mt-8 pt-6 border-t border-slate-700/50">
+                    <button onclick="closeLotteryAndRedraw()" class="px-10 py-3 bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-500 hover:to-slate-600 text-white font-extrabold rounded-xl shadow-lg transition-all whitespace-nowrap">
+                        ✖️ 關閉並重新抽籤
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -1391,6 +1398,20 @@
 
         function closeLotteryModal() {
             document.getElementById('lotteryModal').classList.add('hidden');
+        }
+
+        // 關閉並重新抽籤：關閉 Modal 並重置狀態
+        function closeLotteryAndRedraw() {
+            currentLotteryStudent = null;
+            document.getElementById('lotteryModal').classList.add('hidden');
+            // 重置 UI 狀態，以便下次抽籤正常顯示
+            document.getElementById('lotteryRevealBtn').classList.remove('hidden');
+            document.getElementById('lotteryWishesContent').classList.add('hidden');
+            document.getElementById('lotteryStudentHeader').innerText = '';
+            document.getElementById('lotteryStudentStatus').innerText = '';
+            document.getElementById('lotteryRetainedContainer').innerHTML = '';
+            document.getElementById('lotteryAbandonedContainer').innerHTML = '';
+            document.getElementById('lotteryInitialWishesContainer').innerHTML = '';
         }
 
         // Custom Alert Dialog Helper
