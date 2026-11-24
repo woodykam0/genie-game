@@ -4,7 +4,7 @@
  * 功能：靜態檔案託管 + 事件儲存（JSON 檔案持久化）+ Server-Sent Events 即時推送
  * 環境變數：
  *   PORT              監聽埠（Render 等平台會自動注入，本機預設 3000）
- *   TEACHER_PASSWORD  教師密碼（預設 @W423021k，務必在 Render 環境變數設定）
+ *   TEACHER_PASSWORD  教師密碼（預設 @W423021k，可在 Render 環境變數覆蓋）
  *   DATA_FILE         資料檔案路徑（預設 ./data/events.json）
  */
 'use strict';
@@ -14,8 +14,8 @@ const path = require('path');
 const crypto = require('crypto');
 
 const PORT = Number(process.env.PORT) || 3000;
-// 密碼一律從環境變數讀取，不寫進版本庫。未設定時教師驗證一律失敗（安全鎖定）。
-const TEACHER_PASSWORD = process.env.TEACHER_PASSWORD || '';
+// 優先從環境變數讀取；若未設定則使用預設密碼 @W423021k（僅供課堂使用，正式部署請在 Render 環境變數設定自訂密碼）。
+const TEACHER_PASSWORD = process.env.TEACHER_PASSWORD || '@W423021k';
 function teacherOk(pw) { return !!TEACHER_PASSWORD && pw === TEACHER_PASSWORD; }
 const DATA_FILE = process.env.DATA_FILE || path.join(__dirname, 'data', 'events.json');
 const PUBLIC_DIR = __dirname; // 扁平佈局：index.html 與 server.js 同目錄
