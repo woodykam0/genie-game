@@ -151,6 +151,18 @@ const server = http.createServer(async (req, res) => {
       if (PROTECTED.has(evType) && !teacherOk(String(req.headers['x-teacher-key'] || ''))) {
         return sendJson(res, 403, { error: '教師驗證失效，請重新登入控制台。' });
       }
+
+      // 處理活動重置：清除該 instanceId 的所有數據
+      if (evType === 'activity_reset') {
+        const before = items.length;
+        items = items.filter((item) => (item.instanceId || 'default') !== instanceId);
+        await persist();
+        version += 1;
+        broadcast(instanceId);
+        console.log(`[reset] 已清除 instanceId=${instanceId} 的 ${before - items.length} 條數據`);
+        return sendJson(res, 200, { ok: true, version, reset: true });
+      }
+
       const item = { id: crypto.randomUUID(), createdAt: Date.now(), instanceId, data };
       items.push(item);
       if (items.length > MAX_ITEMS) items = items.slice(items.length - MAX_ITEMS);
