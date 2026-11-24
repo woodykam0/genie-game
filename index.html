@@ -1076,7 +1076,7 @@
             goToStep(4);
         }
 
-        function submitStudentChoice() {
+        async function submitStudentChoice() {
             const className = document.getElementById('inputClass').value;
             const studentId = document.getElementById('inputId').value.trim();
             const name = document.getElementById('inputName').value.trim();
@@ -1154,7 +1154,7 @@
             document.getElementById('passwordModal').classList.add('hidden');
         }
 
-        function handlePasswordSubmit(e) {
+        async function handlePasswordSubmit(e) {
             e.preventDefault();
             const val = document.getElementById('teacherPasswordInput').value;
             try {
