@@ -591,40 +591,54 @@
                 <h3 id="lotteryStudentHeader" class="text-2xl sm:text-3xl font-black text-white mt-2">
                     <!-- Student Info Inserted Here -->
                 </h3>
+                <p id="lotteryStudentStatus" class="text-xs text-slate-400 mt-1">
+                    點擊下方按鈕揭密，查看該同學的願望與淘汰過程
+                </p>
             </div>
 
-            <!-- Retained Core Wishes -->
-            <div class="space-y-2">
-                <h4 class="text-xs font-bold text-gold-400 uppercase tracking-wider flex items-center">
-                    <i class="fa-solid fa-crown mr-1"></i> 最終保留的 3 大核心願望
-                </h4>
-                <div id="lotteryRetainedContainer" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <!-- Cards Inserted -->
-                </div>
+            <!-- 揭密按鈕 -->
+            <div class="flex justify-center mb-6">
+                <button onclick="revealStudentWishes()" id="lotteryRevealBtn" class="px-8 py-3 bg-gradient-to-r from-gold-400 to-amber-500 hover:from-gold-300 hover:to-yellow-400 text-cosmic-900 font-extrabold rounded-xl shadow-lg transition-all text-sm whitespace-nowrap">
+                    🔓 揭密顯示願望
+                </button>
             </div>
 
-            <!-- Abandoned Wishes -->
-            <div class="space-y-2">
-                <h4 class="text-xs font-bold text-red-400 uppercase tracking-wider flex items-center">
-                    <i class="fa-solid fa-ban mr-1"></i> 過程中淘汰放棄的 7 個願望
-                </h4>
-                <div id="lotteryAbandonedContainer" class="flex flex-wrap gap-2">
-                    <!-- Chips Inserted -->
-                </div>
-            </div>
+            <!-- 願望內容區域（揭密前隱藏） -->
+            <div id="lotteryWishesContent" class="hidden space-y-6">
 
-            <!-- Full 10 Wishes with Custom Highlight -->
-            <div class="bg-cosmic-900/90 rounded-xl p-4 border border-slate-700 space-y-2">
-                <div class="flex justify-between items-center">
-                    <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                        <i class="fa-solid fa-list mr-1"></i> 初始 10 個願望完整清單
+                <!-- Retained Core Wishes -->
+                <div class="space-y-2">
+                    <h4 class="text-xs font-bold text-gold-400 uppercase tracking-wider flex items-center">
+                        <i class="fa-solid fa-crown mr-1"></i> 最終保留的 3 大核心願望
                     </h4>
-                    <span class="text-[11px] text-amber-300">
-                        ⭐ 亮黃色 Highlight 表示手動自訂填寫
-                    </span>
+                    <div id="lotteryRetainedContainer" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <!-- Cards Inserted -->
+                    </div>
                 </div>
-                <div id="lotteryInitialWishesContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                    <!-- List Inserted -->
+
+                <!-- Abandoned Wishes -->
+                <div class="space-y-2">
+                    <h4 class="text-xs font-bold text-red-400 uppercase tracking-wider flex items-center">
+                        <i class="fa-solid fa-ban mr-1"></i> 過程中淘汰放棄的 7 個願望
+                    </h4>
+                    <div id="lotteryAbandonedContainer" class="flex flex-wrap gap-2">
+                        <!-- Chips Inserted -->
+                    </div>
+                </div>
+
+                <!-- Full 10 Wishes with Custom Highlight -->
+                <div class="bg-cosmic-900/90 rounded-xl p-4 border border-slate-700 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                            <i class="fa-solid fa-list mr-1"></i> 初始 10 個願望完整清單
+                        </h4>
+                        <span class="text-[11px] text-amber-300">
+                            ⭐ 亮黃色 Highlight 表示手動自訂填寫
+                        </span>
+                    </div>
+                    <div id="lotteryInitialWishesContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        <!-- List Inserted -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -688,6 +702,7 @@
         // State variables
         let currentAuthAction = null; // 'ENTER_TEACHER' or 'RESET_DATA'
         let currentStudentStep = 1;
+        let currentLotteryStudent = null; // 儲存當前抽中的學生，供揭密使用
         let studentWishes = Array(10).fill(null).map(() => ({ text: '', isCustom: true }));
         let round1AbandonedIndices = [];
         let round2AbandonedIndices = [];
@@ -1302,8 +1317,30 @@
             const randomIndex = Math.floor(Math.random() * filteredData.length);
             const luckyStudent = filteredData[randomIndex];
 
-            // Populate Modal
+            // 儲存當前抽中的學生，供揭密使用
+            currentLotteryStudent = luckyStudent;
+
+            // Populate 學生基本資訊（僅顯示姓名等，願望內容待揭密）
             document.getElementById('lotteryStudentHeader').innerText = `${luckyStudent.className} (${luckyStudent.studentId}號) - ${luckyStudent.name}`;
+            document.getElementById('lotteryStudentStatus').innerText = '點擊下方「揭密顯示願望」按鈕，查看該同學的願望與淘汰過程';
+
+            // 清空願望內容區域
+            document.getElementById('lotteryRetainedContainer').innerHTML = '';
+            document.getElementById('lotteryAbandonedContainer').innerHTML = '';
+            document.getElementById('lotteryInitialWishesContainer').innerHTML = '';
+
+            // 隱藏願望內容，顯示揭密按鈕
+            document.getElementById('lotteryWishesContent').classList.add('hidden');
+            document.getElementById('lotteryRevealBtn').classList.remove('hidden');
+
+            document.getElementById('lotteryModal').classList.remove('hidden');
+        }
+
+        // 揭密顯示該學生的願望與淘汰過程
+        function revealStudentWishes() {
+            if (!currentLotteryStudent) return;
+
+            const luckyStudent = currentLotteryStudent;
 
             // Retained Wishes
             const retainedContainer = document.getElementById('lotteryRetainedContainer');
@@ -1346,7 +1383,10 @@
                 initialContainer.appendChild(item);
             });
 
-            document.getElementById('lotteryModal').classList.remove('hidden');
+            // 隱藏揭密按鈕，顯示願望內容
+            document.getElementById('lotteryRevealBtn').classList.add('hidden');
+            document.getElementById('lotteryWishesContent').classList.remove('hidden');
+            document.getElementById('lotteryStudentStatus').innerText = '已揭密：以下為該同學的完整願望與淘汰過程';
         }
 
         function closeLotteryModal() {
