@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: genie-game-classroom
+    runtime: node
+    plan: free
+    buildCommand: ""
+    startCommand: "node server.js"
+    envVars:
+      - key: TEACHER_PASSWORD
+        sync: false   # 密碼不寫進版本庫
+
+# Deploy 2026-11-24

@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>神燈遊戲：自我實踐</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Noto Sans TC & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            100: '#fff9e6',
+                            300: '#ffe066',
+                            400: '#ffd700',
+                            500: '#e6c200',
+                            600: '#b39700',
+                        },
+                        cosmic: {
+                            900: '#060b19',
+                            800: '#0a132b',
+                            700: '#1c2541',
+                            600: '#3a506b',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans TC', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Background Fallback & Overlay */
+        body {
+            font-family: 'Noto Sans TC', 'Inter', sans-serif;
+            background-color: #060b19;
+            background-image: 
+                radial-gradient(circle at 50% 20%, rgba(58, 80, 107, 0.4) 0%, transparent 60%),
+                radial-gradient(circle at 80% 80%, rgba(255, 215, 0, 0.08) 0%, transparent 40%),
+                url('image_a9353d.jpg'),
+                linear-gradient(135deg, #060b19 0%, #0a132b 50%, #1c2541 100%);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        /* Glassmorphism Cards */
+        .glass-card {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 215, 0, 0.18);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 215, 0, 0.05);
+        }
+
+        .glass-card-gold {
+            background: rgba(24, 20, 10, 0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.15);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(6, 11, 25, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 215, 0, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 215, 0, 0.6);
+        }
+
+        /* Strike-through styling */
+        .abandoned-wish {
+            position: relative;
+            opacity: 0.5;
+            background: rgba(239, 68, 68, 0.1) !important;
+            border-color: rgba(239, 68, 68, 0.4) !important;
+        }
+        .abandoned-wish::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 5%;
+            width: 90%;
+            height: 3px;
+            background-color: #ef4444;
+            transform: translateY(-50%) rotate(-1deg);
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+            border-radius: 2px;
+        }
+
+        /* Gold Glow Effect */
+        .gold-glow {
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.35);
+        }
+
+        /* Star Animation */
+        @keyframes pulseStar {
+            0%, 100% { opacity: 0.3; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+        .star-pulse {
+            animation: pulseStar 3s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen relative overflow-x-hidden antialiased selection:bg-gold-400 selection:text-black">
+
+    <!-- Background Stars Layer -->
+    <div class="fixed inset-0 pointer-events-none z-0">
+        <div class="absolute top-10 left-10 text-gold-400 text-xs star-pulse opacity-40"><i class="fa-solid fa-star"></i></div>
+        <div class="absolute top-1/4 right-20 text-gold-300 text-sm star-pulse opacity-60" style="animation-delay: 1s;"><i class="fa-solid fa-sparkles"></i></div>
+        <div class="absolute bottom-20 left-1/5 text-gold-400 text-xs star-pulse opacity-50" style="animation-delay: 1.5s;"><i class="fa-solid fa-star"></i></div>
+        <div class="absolute top-1/3 left-2/3 text-amber-200 text-xs star-pulse opacity-30" style="animation-delay: 2s;"><i class="fa-solid fa-sparkles"></i></div>
+    </div>
+
+    <!-- Top Navigation Bar -->
+    <header class="relative z-10 w-full border-b border-gold-400/20 bg-cosmic-900/80 backdrop-blur-md px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('portalView')">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-gold-500 to-amber-200 flex items-center justify-center text-cosmic-900 font-extrabold text-xl shadow-lg shadow-gold-500/20">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </div>
+            <div>
+                <h1 class="font-extrabold text-lg sm:text-xl tracking-wide bg-gradient-to-r from-gold-300 via-yellow-100 to-amber-400 bg-clip-text text-transparent">
+                    神燈遊戲：自我實踐
+                </h1>
+                <p class="text-xs text-slate-400 font-light hidden sm:block">Genie Game: Self-Realization & Value Exploration</p>
+            </div>
+        </div>
+        <div id="navRightButtons" class="flex items-center space-x-2">
+            <button onclick="switchView('portalView')" class="px-3 py-1.5 text-xs sm:text-sm rounded-lg border border-slate-700 bg-slate-800/80 hover:bg-slate-700 hover:border-gold-400/50 transition-all text-slate-200">
+                <i class="fa-solid fa-house mr-1"></i> 返回首頁
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="relative z-10 flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 md:p-8 flex flex-col justify-center">
+
+        <!-- ================= 1. PORTAL VIEW (入口頁) ================= -->
+        <section id="portalView" class="w-full flex flex-col items-center justify-center py-6 sm:py-12 text-center">
+            <!-- Lamp Icon Graphics -->
+            <div class="relative mb-6">
+                <div class="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-indigo-900/80 to-cosmic-900 border border-gold-400/40 flex items-center justify-center shadow-2xl gold-glow mx-auto">
+                    <i class="fa-solid fa-glass-water-droplet text-5xl sm:text-6xl text-gold-400"></i>
+                </div>
+                <div class="absolute -bottom-2 right-1/4 bg-gold-400 text-cosmic-900 text-xs px-2 py-0.5 rounded-full font-bold shadow">
+                    願望探索
+                </div>
+            </div>
+
+            <h2 class="text-2xl sm:text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">
+                探索內心真實渴望，定義你的<span class="text-gold-400">人生價值</span>
+            </h2>
+            <p class="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto mb-10 leading-relaxed">
+                若阿拉丁神燈能為你實現 10 個願望，但在現實與命運的抉擇中，你必須勇敢劃去不那麼重要的選項... 最終留下的，將是你內心最珍視的核心自我。
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
+                <!-- Student Entrance Button -->
+                <button onclick="switchView('studentView')" class="glass-card p-6 sm:p-8 rounded-2xl flex flex-col items-center text-center group hover:border-gold-400 transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="w-16 h-16 rounded-full bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
+                        📱
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2 group-hover:text-gold-300 transition-colors">進入學生端</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed mb-4">填寫個人願望清單、體驗兩輪殘酷淘汰，鎖定並提交你的人生終極 3 大願望。</p>
+                    <span class="inline-flex items-center text-sm font-semibold text-gold-400 group-hover:underline">
+                        開始許願之旅 <i class="fa-solid fa-arrow-right ml-2 text-xs"></i>
+                    </span>
+                </button>
+
+                <!-- Teacher Entrance Button -->
+                <button onclick="requestTeacherAuth()" class="glass-card p-6 sm:p-8 rounded-2xl flex flex-col items-center text-center group hover:border-gold-400 transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="w-16 h-16 rounded-full bg-amber-600/20 text-gold-400 border border-gold-500/30 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
+                        🖥️
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2 group-hover:text-gold-300 transition-colors">進入教師端（大屏幕）</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed mb-4">實時數據統計榜單、最多放棄與保留願望分析，支援年級隨機抽籤揭密。</p>
+                    <span class="inline-flex items-center text-sm font-semibold text-gold-400 group-hover:underline">
+                        打開控制大屏 <i class="fa-solid fa-lock ml-2 text-xs"></i>
+                    </span>
+                </button>
+            </div>
+        </section>
+
+
+        <!-- ================= 2. STUDENT PORTAL (學生端) ================= -->
+        <section id="studentView" class="w-full hidden space-y-6">
+
+            <!-- Progress Bar Header -->
+            <div class="glass-card rounded-2xl p-4 sm:p-6 mb-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+                    <div>
+                        <span id="stepIndicatorBadge" class="bg-gold-400/20 text-gold-300 text-xs px-2.5 py-1 rounded-full border border-gold-400/40 font-bold">
+                            階段 1 / 4
+                        </span>
+                        <h2 id="stepTitle" class="text-lg sm:text-xl font-bold text-white mt-1">許願準備：填寫資料與 10 個願望</h2>
+                    </div>
+                    <span id="stepSubtitle" class="text-xs text-slate-400">請選取或手動輸入湊滿 10 個願望（至少 3 個需自訂）</span>
+                </div>
+
+                <!-- Step Bar -->
+                <div class="grid grid-cols-4 gap-2">
+                    <div id="barStep1" class="h-2 rounded-full bg-gold-400 transition-all"></div>
+                    <div id="barStep2" class="h-2 rounded-full bg-slate-700 transition-all"></div>
+                    <div id="barStep3" class="h-2 rounded-full bg-slate-700 transition-all"></div>
+                    <div id="barStep4" class="h-2 rounded-full bg-slate-700 transition-all"></div>
+                </div>
+            </div>
+
+            <!-- STEP 1: Form & Input Wishes -->
+            <div id="studentStep1" class="space-y-6">
+                <!-- Student Information Card -->
+                <div class="glass-card rounded-2xl p-5 sm:p-6">
+                    <h3 class="text-md font-bold text-gold-300 mb-4 flex items-center">
+                        <i class="fa-solid fa-id-card mr-2"></i> 個人身分資料填寫
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs text-slate-300 mb-1 font-semibold">班別 <span class="text-red-400">*</span></label>
+                            <select id="inputClass" class="w-full bg-cosmic-900/90 border border-slate-600 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-gold-400">
+                                <option value="" disabled selected>請選擇班別</option>
+                                <option value="初一甲">初一甲</option>
+                                <option value="初一乙">初一乙</option>
+                                <option value="初一丙">初一丙</option>
+                                <option value="初一丁">初一丁</option>
+                                <option value="初一戊">初一戊</option>
+                                <option value="初二甲">初二甲</option>
+                                <option value="初二乙">初二乙</option>
+                                <option value="初二丙">初二丙</option>
+                                <option value="初二丁">初二丁</option>
+                                <option value="初三甲">初三甲</option>
+                                <option value="初三乙">初三乙</option>
+                                <option value="初三丙">初三丙</option>
+                                <option value="初三丁">初三丁</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-300 mb-1 font-semibold">學號 <span class="text-red-400">*</span></label>
+                            <input type="text" id="inputId" placeholder="如：01" class="w-full bg-cosmic-900/90 border border-slate-600 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-gold-400">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-300 mb-1 font-semibold">姓名 <span class="text-red-400">*</span></label>
+                            <input type="text" id="inputName" placeholder="請輸入姓名" class="w-full bg-cosmic-900/90 border border-slate-600 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-gold-400">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preset Wish Tags Library -->
+                <div class="glass-card rounded-2xl p-5 sm:p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3">
+                        <h3 class="text-md font-bold text-gold-300 flex items-center">
+                            <i class="fa-solid fa-tags mr-2"></i> 預設快捷願望標籤 (點擊可帶入，最多選 7 個)
+                        </h3>
+                        <span class="text-xs text-amber-300 font-medium">⚠️ 規定：至少須保留 3 個欄位手動輸入自訂願望</span>
+                    </div>
+                    
+                    <div id="presetTagsContainer" class="flex flex-wrap gap-2">
+                        <!-- Preset Tags generated dynamically -->
+                    </div>
+                </div>
+
+                <!-- 10 Wishes Inputs List -->
+                <div class="glass-card rounded-2xl p-5 sm:p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 border-b border-slate-700/60 pb-3">
+                        <h3 class="text-md font-bold text-gold-300 flex items-center">
+                            <i class="fa-solid fa-list-check mr-2"></i> 你的 10 個願望清單
+                        </h3>
+                        <div class="flex items-center space-x-3 text-xs">
+                            <span class="bg-blue-900/50 text-blue-200 border border-blue-500/30 px-2.5 py-1 rounded-lg">
+                                預設標籤：<span id="presetCountText" class="font-bold text-gold-400">0</span> / 7
+                            </span>
+                            <span class="bg-purple-900/50 text-purple-200 border border-purple-500/30 px-2.5 py-1 rounded-lg">
+                                手動自訂：<span id="customCountText" class="font-bold text-gold-400">0</span> / 至少 3
+                            </span>
+                            <span class="bg-emerald-900/50 text-emerald-200 border border-emerald-500/30 px-2.5 py-1 rounded-lg">
+                                總計：<span id="totalCountText" class="font-bold text-gold-400">0</span> / 10
+                            </span>
+                        </div>
+                    </div>
+
+                    <div id="wishesInputGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <!-- 10 Inputs generated dynamically via JS -->
+                    </div>
+
+                    <div class="mt-6 flex justify-end">
+                        <button onclick="validateAndStartElimination()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-gold-500 to-amber-400 hover:from-gold-400 hover:to-yellow-300 text-cosmic-900 font-extrabold rounded-xl shadow-lg shadow-gold-500/20 transition-all transform active:scale-95 flex items-center justify-center text-base">
+                            開始向神燈許願 ➔
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 2: First Round Elimination (10 choose 6) -->
+            <div id="studentStep2" class="space-y-6 hidden">
+                <!-- Warning Alert Banner -->
+                <div class="bg-red-900/40 border-2 border-red-500/60 rounded-2xl p-4 text-slate-200 flex items-start space-x-3 shadow-lg">
+                    <i class="fa-solid fa-triangle-exclamation text-red-400 text-2xl mt-0.5 flex-shrink-0"></i>
+                    <div>
+                        <h4 class="font-extrabold text-red-300 text-base mb-1">【第一輪淘汰：10 擇 6】警示說明</h4>
+                        <p class="text-xs sm:text-sm leading-relaxed text-slate-200">
+                            使用神燈實現願望的後果，就是<strong class="text-red-300 underline underline-offset-2">被淘汰的選項將無法再以任何方式達成</strong>。請深思熟慮，點擊並劃線放棄 <strong class="text-gold-300 text-base">4 個</strong> 你相對可以割捨的願望！
+                        </p>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-2xl p-5 sm:p-6">
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-700/60 pb-3">
+                        <h3 class="text-base font-bold text-slate-200">
+                            請點選 4 個決定劃線放棄的願望
+                        </h3>
+                        <span class="text-xs sm:text-sm bg-slate-800 border border-slate-600 px-3 py-1 rounded-full text-gold-300 font-bold">
+                            已選擇放棄：<span id="round1AbandonCount">0</span> / 4
+                        </span>
+                    </div>
+
+                    <div id="round1WishGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <!-- Rendered by JS -->
+                    </div>
+
+                    <div class="mt-6 flex justify-between items-center">
+                        <button onclick="goToStep(1)" class="px-5 py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-800 text-sm">
+                            <i class="fa-solid fa-arrow-left mr-1"></i> 返回修改願望
+                        </button>
+                        <button id="btnProceedRound2" onclick="startRound2()" disabled class="px-8 py-3.5 bg-slate-700 text-slate-400 font-extrabold rounded-xl text-base transition-all flex items-center cursor-not-allowed">
+                            進入下一輪淘汰 (6 擇 3) ➔
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: Second Round Elimination (6 choose 3) -->
+            <div id="studentStep3" class="space-y-6 hidden">
+                <div class="bg-amber-900/40 border-2 border-amber-500/60 rounded-2xl p-4 text-slate-200 flex items-start space-x-3 shadow-lg">
+                    <i class="fa-solid fa-bolt text-amber-400 text-2xl mt-0.5 flex-shrink-0"></i>
+                    <div>
+                        <h4 class="font-extrabold text-amber-300 text-base mb-1">【第二輪淘汰：6 擇 3】終極抉擇</h4>
+                        <p class="text-xs sm:text-sm leading-relaxed text-slate-200">
+                            在剩下的 6 個願望中，請劃線再淘汰 <strong class="text-gold-300 text-base">3 個</strong> 願望。最終留下的 3 個選項，將成為你靈魂深處最堅定、最無法替代的核心價值！
+                        </p>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-2xl p-5 sm:p-6">
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-700/60 pb-3">
+                        <h3 class="text-base font-bold text-slate-200">
+                            在以下 6 個願望中，請再點選 3 個劃線放棄
+                        </h3>
+                        <span class="text-xs sm:text-sm bg-slate-800 border border-slate-600 px-3 py-1 rounded-full text-gold-300 font-bold">
+                            本輪選擇放棄：<span id="round2AbandonCount">0</span> / 3
+                        </span>
+                    </div>
+
+                    <div id="round2WishGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <!-- Rendered by JS -->
+                    </div>
+
+                    <div class="mt-6 flex justify-between items-center">
+                        <button onclick="goToStep(2)" class="px-5 py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-800 text-sm">
+                            <i class="fa-solid fa-arrow-left mr-1"></i> 上一輪
+                        </button>
+                        <button id="btnProceedFinal" onclick="showFinalConfirmation()" disabled class="px-8 py-3.5 bg-slate-700 text-slate-400 font-extrabold rounded-xl text-base transition-all flex items-center cursor-not-allowed">
+                            確認最終核心願望 ➔
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 4: Final Confirmation & Submission -->
+            <div id="studentStep4" class="space-y-6 hidden">
+                <div class="glass-card-gold rounded-2xl p-6 sm:p-8 text-center space-y-6">
+                    <div class="w-16 h-16 rounded-full bg-gold-400/20 text-gold-400 border border-gold-400/50 flex items-center justify-center text-3xl mx-auto shadow-lg">
+                        🏆
+                    </div>
+                    <div>
+                        <h3 class="text-2xl sm:text-3xl font-black text-white mb-2">你的自我實踐 3 大核心願望</h3>
+                        <p class="text-xs sm:text-sm text-gold-300">經過深思熟慮的淘汰，這是你最珍視的價值選擇：</p>
+                    </div>
+
+                    <!-- Retained 3 Wishes Cards -->
+                    <div id="finalRetainedWishes" class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
+                        <!-- Rendered by JS -->
+                    </div>
+
+                    <!-- Abandoned 7 Wishes List -->
+                    <div class="bg-cosmic-900/80 rounded-xl p-4 border border-slate-700 text-left">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                            <i class="fa-solid fa-ban mr-1 text-red-400"></i> 你在過程中選擇放下的 7 個願望：
+                        </h4>
+                        <div id="finalAbandonedWishes" class="flex flex-wrap gap-2">
+                            <!-- Rendered by JS -->
+                        </div>
+                    </div>
+
+                    <div class="pt-4 flex flex-col sm:flex-row justify-center items-center gap-4">
+                        <button onclick="goToStep(3)" class="w-full sm:w-auto px-6 py-3 border border-slate-600 text-slate-300 hover:bg-slate-800 rounded-xl text-sm">
+                            <i class="fa-solid fa-pen-to-square mr-1"></i> 重新調整選擇
+                        </button>
+                        <button onclick="submitStudentChoice()" class="w-full sm:w-auto px-10 py-3.5 bg-gradient-to-r from-gold-500 to-amber-400 hover:from-gold-400 hover:to-yellow-300 text-cosmic-900 font-extrabold rounded-xl shadow-xl gold-glow transition-all text-base transform active:scale-95">
+                            🚀 提交我的選擇
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- ================= 3. TEACHER DASHBOARD (教師端) ================= -->
+        <section id="teacherView" class="w-full hidden space-y-6">
+
+            <!-- Dashboard Control Bar -->
+            <div class="glass-card rounded-2xl p-4 sm:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-black text-gold-300 flex items-center">
+                        <i class="fa-solid fa-chart-pie mr-2"></i> 全校 / 年級 許願大數據儀表板
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">實時統計學生選擇、分析核心渴望與放棄榜單</p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="loadTeacherDashboardData()" class="px-3.5 py-2 bg-blue-600/80 hover:bg-blue-500 text-white rounded-xl text-xs sm:text-sm font-semibold transition-all border border-blue-400/40">
+                        <i class="fa-solid fa-rotate mr-1.5"></i> 點擊更新數據
+                    </button>
+                    <button onclick="requestResetDataAuth()" class="px-3.5 py-2 bg-red-900/60 hover:bg-red-800 text-red-200 rounded-xl text-xs sm:text-sm font-semibold transition-all border border-red-500/40">
+                        <i class="fa-solid fa-trash-can mr-1.5"></i> 重置整個活動數據
+                    </button>
+                </div>
+            </div>
+
+            <!-- Top Stats Counters -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="glass-card rounded-2xl p-5 flex items-center space-x-4 border-l-4 border-gold-400">
+                    <div class="w-12 h-12 rounded-xl bg-gold-400/20 text-gold-400 flex items-center justify-center text-2xl font-bold">
+                        👥
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400">總提交參與人數</p>
+                        <p id="statTotalCount" class="text-2xl font-black text-white">0 人</p>
+                    </div>
+                </div>
+                
+                <div class="glass-card rounded-2xl p-5 flex items-center space-x-4 border-l-4 border-emerald-400">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl font-bold">
+                        🏆
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400">最高頻保留核心願望</p>
+                        <p id="statTopCoreWish" class="text-sm sm:text-base font-bold text-emerald-300 truncate max-w-[180px]">尚無數據</p>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-2xl p-5 flex items-center space-x-4 border-l-4 border-red-400">
+                    <div class="w-12 h-12 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center text-2xl font-bold">
+                        💔
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400">最高頻淘汰願望</p>
+                        <p id="statTopAbandonedWish" class="text-sm sm:text-base font-bold text-red-300 truncate max-w-[180px]">尚無數據</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaderboards Top 5 (Retained vs Abandoned) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Top 5 Retained Core Wishes -->
+                <div class="glass-card rounded-2xl p-5 sm:p-6">
+                    <h3 class="text-base sm:text-lg font-bold text-gold-300 mb-4 flex items-center">
+                        <i class="fa-solid fa-trophy mr-2 text-gold-400"></i> 最多學生保留的核心願望 Top 5
+                    </h3>
+                    <div id="topRetainedList" class="space-y-3">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Top 5 Abandoned Wishes -->
+                <div class="glass-card rounded-2xl p-5 sm:p-6">
+                    <h3 class="text-base sm:text-lg font-bold text-red-400 mb-4 flex items-center">
+                        <i class="fa-solid fa-heart-crack mr-2"></i> 最多被放棄的願望 Top 5
+                    </h3>
+                    <div id="topAbandonedList" class="space-y-3">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grade Lottery Section -->
+            <div class="glass-card-gold rounded-2xl p-6 sm:p-8 space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h3 class="text-xl font-extrabold text-white flex items-center">
+                            <i class="fa-solid fa-dice text-gold-400 mr-2 text-2xl"></i> 年級隨機抽籤與揭密
+                        </h3>
+                        <p class="text-xs text-slate-300">選擇年級範圍，隨機抽出學生在大螢幕展示其 10 個初始願望與淘汰軌跡</p>
+                    </div>
+
+                    <div class="flex items-center space-x-3 w-full sm:w-auto">
+                        <select id="lotteryGradeFilter" class="bg-cosmic-900 border border-gold-400/50 text-white rounded-xl px-3 py-2 text-sm focus:outline-none">
+                            <option value="ALL">全部年級 (初一~初三)</option>
+                            <option value="初一">初一 (初一甲~戊)</option>
+                            <option value="初二">初二 (初二甲~丁)</option>
+                            <option value="初三">初三 (初三甲~丁)</option>
+                        </select>
+                        <button onclick="drawRandomStudent()" class="px-6 py-2.5 bg-gradient-to-r from-gold-400 to-amber-500 hover:from-gold-300 hover:to-yellow-400 text-cosmic-900 font-extrabold rounded-xl shadow-lg transition-all text-sm whitespace-nowrap">
+                            🎲 隨機抽選一位同學
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- ================= MODALS & DIALOGS ================= -->
+
+    <!-- Password Modal for Teacher Access & Reset -->
+    <div id="passwordModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md hidden">
+        <div class="glass-card max-w-md w-full rounded-2xl p-6 relative border border-gold-400/40 shadow-2xl">
+            <button onclick="closePasswordModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div class="text-center mb-6">
+                <div class="w-14 h-14 bg-gold-400/20 text-gold-400 rounded-full flex items-center justify-center text-2xl mx-auto mb-3">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h3 id="pwdModalTitle" class="text-xl font-bold text-white">教師端安全驗證</h3>
+                <p id="pwdModalSubtitle" class="text-xs text-slate-400 mt-1">請輸入教師專屬管理密碼以繼續</p>
+            </div>
+            
+            <form onsubmit="handlePasswordSubmit(event)" class="space-y-4">
+                <div>
+                    <input type="password" id="teacherPasswordInput" placeholder="請輸入密碼" class="w-full bg-cosmic-900 border border-slate-600 rounded-xl px-4 py-3 text-white text-center tracking-widest text-lg focus:outline-none focus:border-gold-400">
+                    <p id="pwdErrorMsg" class="text-xs text-red-400 mt-2 text-center hidden">❌ 密碼錯誤，請重試！</p>
+                </div>
+                <button type="submit" class="w-full py-3 bg-gradient-to-r from-gold-500 to-amber-400 text-cosmic-900 font-extrabold rounded-xl hover:from-gold-400 hover:to-yellow-300 transition-all text-base shadow-lg">
+                    驗證並進入
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Student Submission Success Modal -->
+    <div id="studentSuccessModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden">
+        <div class="glass-card-gold max-w-md w-full rounded-2xl p-8 text-center space-y-5 border border-gold-400">
+            <div class="w-20 h-20 bg-gold-400 text-cosmic-900 rounded-full flex items-center justify-center text-4xl mx-auto shadow-xl gold-glow animate-bounce">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h3 class="text-2xl font-black text-white">提交成功，請看大屏幕！</h3>
+            <p class="text-sm text-slate-300 leading-relaxed">
+                你的 3 大核心願望已順利傳送至神燈系統。請保持靜候，關注老師的大螢幕揭密！
+            </p>
+            <button onclick="resetStudentFormAndHome()" class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-gold-300 font-bold rounded-xl border border-gold-400/40 text-sm">
+                返回首頁
+            </button>
+        </div>
+    </div>
+
+    <!-- Lottery Winner Reveal Modal -->
+    <div id="lotteryModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-lg hidden overflow-y-auto">
+        <div class="glass-card max-w-2xl w-full rounded-2xl p-6 sm:p-8 relative border border-gold-400 shadow-2xl space-y-6 my-8">
+            <button onclick="closeLotteryModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            
+            <div class="text-center border-b border-slate-700/80 pb-4">
+                <span class="bg-gold-400/20 text-gold-300 text-xs px-3 py-1 rounded-full border border-gold-400/40 font-bold">
+                    🎲 隨機幸運揭密
+                </span>
+                <h3 id="lotteryStudentHeader" class="text-2xl sm:text-3xl font-black text-white mt-2">
+                    <!-- Student Info Inserted Here -->
+                </h3>
+            </div>
+
+            <!-- Retained Core Wishes -->
+            <div class="space-y-2">
+                <h4 class="text-xs font-bold text-gold-400 uppercase tracking-wider flex items-center">
+                    <i class="fa-solid fa-crown mr-1"></i> 最終保留的 3 大核心願望
+                </h4>
+                <div id="lotteryRetainedContainer" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <!-- Cards Inserted -->
+                </div>
+            </div>
+
+            <!-- Abandoned Wishes -->
+            <div class="space-y-2">
+                <h4 class="text-xs font-bold text-red-400 uppercase tracking-wider flex items-center">
+                    <i class="fa-solid fa-ban mr-1"></i> 過程中淘汰放棄的 7 個願望
+                </h4>
+                <div id="lotteryAbandonedContainer" class="flex flex-wrap gap-2">
+                    <!-- Chips Inserted -->
+                </div>
+            </div>
+
+            <!-- Full 10 Wishes with Custom Highlight -->
+            <div class="bg-cosmic-900/90 rounded-xl p-4 border border-slate-700 space-y-2">
+                <div class="flex justify-between items-center">
+                    <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                        <i class="fa-solid fa-list mr-1"></i> 初始 10 個願望完整清單
+                    </h4>
+                    <span class="text-[11px] text-amber-300">
+                        ⭐ 亮黃色 Highlight 表示手動自訂填寫
+                    </span>
+                </div>
+                <div id="lotteryInitialWishesContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    <!-- List Inserted -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Modal for Custom Errors -->
+    <div id="alertModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm hidden">
+        <div class="glass-card max-w-sm w-full rounded-2xl p-6 text-center space-y-4 border border-red-500/40">
+            <div class="w-12 h-12 bg-red-500/20 text-red-400 rounded-full flex items-center justify-center text-2xl mx-auto">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+            <h4 id="alertTitle" class="text-lg font-bold text-white">提示訊息</h4>
+            <p id="alertBody" class="text-xs text-slate-300 leading-relaxed"></p>
+            <button onclick="closeAlertModal()" class="w-full py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-sm font-semibold">
+                好的，知道了
+            </button>
+        </div>
+    </div>
+
+
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+    <script>
+        // Preset Wishes List
+        const PRESET_WISHES = [
+            "中十億六合彩頭獎（瞬間改變家族命運）",
+            "買一座私人海灘度假島（終極財富自由）",
+            "擁有一台全球限量超跑（如法拉利）",
+            "獲哈佛、牛津全額獎學金（學術最高榮耀）",
+            "創立的公司上市成億萬富翁（事業極致成功）",
+            "坐私人飛機環遊世界一年（極致自由體驗）",
+            "和偶像單獨共進晚餐（追星終極夢想）",
+            "讓家人永遠健康百病不侵（面對生老病死）",
+            "獲得過目不忘的超能力（突破人類極限）",
+            "成為奧運或諾貝爾獎得主（名留青史）"
+        ];
+
+        // API 基礎設定（同 origin，無需主機名）
+        const INSTANCE_ID = (new URLSearchParams(window.location.search).get('instanceId') || 'default').slice(0, 64);
+        let eventStream = null;
+
+        async function apiFetch(path, options = {}) {
+          const res = await fetch(path, options);
+          let body = null;
+          try { body = await res.json(); } catch {}
+          if (!res.ok) throw new Error(body?.error ?? ('連線失敗（' + res.status + ')'));
+          return body;
+        }
+
+        function teacherKey() {
+          try { return sessionStorage.getItem('genie:teacherKey:' + INSTANCE_ID) || ''; } catch { return ''; }
+        }
+
+        async function postRaw(data) {
+          return apiFetch('/api/events', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', ...(teacherKey() ? { 'x-teacher-key': teacherKey() } : {}) },
+            body: JSON.stringify({ instanceId: INSTANCE_ID, data })
+          });
+        }
+
+        // State variables
+        let currentAuthAction = null; // 'ENTER_TEACHER' or 'RESET_DATA'
+        let currentStudentStep = 1;
+        let studentWishes = Array(10).fill(null).map(() => ({ text: '', isCustom: true }));
+        let round1AbandonedIndices = [];
+        let round2AbandonedIndices = [];
+
+        // App Initialization
+        window.onload = function() {
+            initPresetTags();
+            initWishInputSlots();
+            updateWishCounts();
+            switchView('portalView');
+            initSSE();
+        };
+
+        // SSE 即時同步（僅教師端需要）
+        function initSSE() {
+          try {
+            if (eventStream) eventStream.close();
+            eventStream = new EventSource('/api/stream?instanceId=' + encodeURIComponent(INSTANCE_ID));
+            eventStream.onmessage = () => {
+              if (!document.getElementById('teacherView').classList.contains('hidden')) {
+                loadTeacherDashboardData();
+              }
+            };
+            eventStream.onerror = () => { eventStream.close(); };
+          } catch {}
+        }
+
+        // Navigation Controller
+        function switchView(viewId) {
+            document.getElementById('portalView').classList.add('hidden');
+            document.getElementById('studentView').classList.add('hidden');
+            document.getElementById('teacherView').classList.add('hidden');
+
+            document.getElementById(viewId).classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            if (viewId === 'teacherView') {
+                loadTeacherDashboardData();
+            }
+        }
+
+        // ================= STUDENT FLOW LOGIC =================
+
+        function initPresetTags() {
+            const container = document.getElementById('presetTagsContainer');
+            container.innerHTML = '';
+            PRESET_WISHES.forEach((wish, idx) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.id = `preset-tag-${idx}`;
+                btn.className = "text-xs px-3 py-1.5 rounded-lg border border-slate-700 bg-cosmic-900/80 text-slate-300 hover:border-gold-400 hover:text-gold-300 transition-all text-left flex items-center space-x-1.5";
+                btn.onclick = () => togglePresetWish(wish, idx);
+                btn.innerHTML = `<i class="fa-solid fa-plus text-[10px] text-gold-400"></i> <span>${wish}</span>`;
+                container.appendChild(btn);
+            });
+        }
+
+        function initWishInputSlots() {
+            const grid = document.getElementById('wishesInputGrid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 10; i++) {
+                const div = document.createElement('div');
+                div.className = "flex items-center space-x-2 bg-cosmic-900/90 border border-slate-700 rounded-xl p-2";
+                div.innerHTML = `
+                    <span class="w-6 h-6 rounded-full bg-slate-800 text-gold-400 font-bold text-xs flex items-center justify-center border border-slate-700 flex-shrink-0">
+                        ${i + 1}
+                    </span>
+                    <input type="text" id="wishInput-${i}" oninput="onWishInputChanged(${i})" placeholder="請輸入或選擇願望 (${i + 1})" class="w-full bg-transparent border-none text-xs sm:text-sm text-white focus:outline-none placeholder-slate-500">
+                    <span id="badgeInput-${i}" class="text-[10px] px-2 py-0.5 rounded text-purple-300 bg-purple-900/40 border border-purple-500/30 flex-shrink-0">自訂</span>
+                `;
+                grid.appendChild(div);
+            }
+        }
+
+        function togglePresetWish(wishText, tagIdx) {
+            // Check if already in input slots
+            let existingIdx = studentWishes.findIndex(w => w.text === wishText);
+            
+            if (existingIdx !== -1) {
+                // Clear it
+                studentWishes[existingIdx] = { text: '', isCustom: true };
+                document.getElementById(`wishInput-${existingIdx}`).value = '';
+                updateWishSlotBadge(existingIdx, true);
+            } else {
+                // Check if preset count limit reached (max 7)
+                const currentPresetCount = studentWishes.filter(w => w.text !== '' && !w.isCustom).length;
+                if (currentPresetCount >= 7) {
+                    showAlert("標籤數量限制", "最多只能選取 7 個預設標籤，其餘至少 3 個需手動輸入自訂願望！");
+                    return;
+                }
+
+                // Find first empty slot
+                let emptyIdx = studentWishes.findIndex(w => w.text === '');
+                if (emptyIdx === -1) {
+                    showAlert("欄位已滿", "10 個願望欄位已滿，請先清空部分欄位。");
+                    return;
+                }
+
+                studentWishes[emptyIdx] = { text: wishText, isCustom: false };
+                document.getElementById(`wishInput-${emptyIdx}`).value = wishText;
+                updateWishSlotBadge(emptyIdx, false);
+            }
+
+            highlightPresetTags();
+            updateWishCounts();
+        }
+
+        function onWishInputChanged(idx) {
+            const val = document.getElementById(`wishInput-${idx}`).value.trim();
+            const isPresetMatch = PRESET_WISHES.includes(val);
+            studentWishes[idx] = { text: val, isCustom: !isPresetMatch };
+            updateWishSlotBadge(idx, !isPresetMatch);
+            highlightPresetTags();
+            updateWishCounts();
+        }
+
+        function updateWishSlotBadge(idx, isCustom) {
+            const badge = document.getElementById(`badgeInput-${idx}`);
+            if (isCustom) {
+                badge.innerText = '自訂';
+                badge.className = 'text-[10px] px-2 py-0.5 rounded text-purple-300 bg-purple-900/40 border border-purple-500/30 flex-shrink-0';
+            } else {
+                badge.innerText = '預設';
+                badge.className = 'text-[10px] px-2 py-0.5 rounded text-blue-300 bg-blue-900/40 border border-blue-500/30 flex-shrink-0';
+            }
+        }
+
+        function highlightPresetTags() {
+            PRESET_WISHES.forEach((wish, idx) => {
+                const btn = document.getElementById(`preset-tag-${idx}`);
+                const isSelected = studentWishes.some(w => w.text === wish);
+                if (isSelected) {
+                    btn.className = "text-xs px-3 py-1.5 rounded-lg border border-gold-400 bg-gold-400/20 text-gold-300 font-bold transition-all text-left flex items-center space-x-1.5 shadow";
+                    btn.querySelector('i').className = "fa-solid fa-check text-[10px] text-gold-400";
+                } else {
+                    btn.className = "text-xs px-3 py-1.5 rounded-lg border border-slate-700 bg-cosmic-900/80 text-slate-300 hover:border-gold-400 hover:text-gold-300 transition-all text-left flex items-center space-x-1.5";
+                    btn.querySelector('i').className = "fa-solid fa-plus text-[10px] text-gold-400";
+                }
+            });
+        }
+
+        function updateWishCounts() {
+            const filledWishes = studentWishes.filter(w => w.text.trim() !== '');
+            const presetCount = filledWishes.filter(w => !w.isCustom).length;
+            const customCount = filledWishes.filter(w => w.isCustom).length;
+            const totalCount = filledWishes.length;
+
+            document.getElementById('presetCountText').innerText = presetCount;
+            document.getElementById('customCountText').innerText = customCount;
+            document.getElementById('totalCountText').innerText = totalCount;
+        }
+
+        function validateAndStartElimination() {
+            const className = document.getElementById('inputClass').value;
+            const studentId = document.getElementById('inputId').value.trim();
+            const name = document.getElementById('inputName').value.trim();
+
+            if (!className || !studentId || !name) {
+                showAlert("身分資料不完整", "請完整填寫【班別】、【學號】與【姓名】！");
+                return;
+            }
+
+            // Sync latest input values
+            for (let i = 0; i < 10; i++) {
+                const val = document.getElementById(`wishInput-${i}`).value.trim();
+                if (val !== '') {
+                    const isPresetMatch = PRESET_WISHES.includes(val);
+                    studentWishes[i] = { text: val, isCustom: !isPresetMatch };
+                } else {
+                    studentWishes[i] = { text: '', isCustom: true };
+                }
+            }
+
+            const filledWishes = studentWishes.filter(w => w.text !== '');
+            const customCount = filledWishes.filter(w => w.isCustom).length;
+
+            if (filledWishes.length < 10) {
+                showAlert("願望數量不足", `請填滿所有 10 個願望！（目前已填寫 ${filledWishes.length} / 10 個）`);
+                return;
+            }
+
+            if (customCount < 3) {
+                showAlert("自訂願望不足", `規定【至少需手動輸入 3 個自訂願望】！（目前僅自訂 ${customCount} 個，請更改部分標籤為手動願望）`);
+                return;
+            }
+
+            // All validated! Move to Step 2 (First Elimination Round)
+            round1AbandonedIndices = [];
+            renderRound1Wishes();
+            goToStep(2);
+        }
+
+        function goToStep(stepNum) {
+            currentStudentStep = stepNum;
+
+            document.getElementById('studentStep1').classList.add('hidden');
+            document.getElementById('studentStep2').classList.add('hidden');
+            document.getElementById('studentStep3').classList.add('hidden');
+            document.getElementById('studentStep4').classList.add('hidden');
+
+            document.getElementById(`studentStep${stepNum}`).classList.remove('hidden');
+
+            // Update Progress Bar
+            document.getElementById('stepIndicatorBadge').innerText = `階段 ${stepNum} / 4`;
+            for (let i = 1; i <= 4; i++) {
+                const bar = document.getElementById(`barStep${i}`);
+                if (i <= stepNum) {
+                    bar.className = 'h-2 rounded-full bg-gold-400 transition-all';
+                } else {
+                    bar.className = 'h-2 rounded-full bg-slate-700 transition-all';
+                }
+            }
+
+            const titleMap = {
+                1: '許願準備：填寫資料與 10 個願望',
+                2: '第一輪淘汰：10 擇 6 (劃線放棄 4 個願望)',
+                3: '第二輪淘汰：6 擇 3 (再劃線放棄 3 個願望)',
+                4: '最終確認：核心願望鎖定與提交'
+            };
+            document.getElementById('stepTitle').innerText = titleMap[stepNum];
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- ROUND 1 ELIMINATION ---
+        function renderRound1Wishes() {
+            const grid = document.getElementById('round1WishGrid');
+            grid.innerHTML = '';
+            
+            studentWishes.forEach((w, idx) => {
+                const isAbandoned = round1AbandonedIndices.includes(idx);
+                const card = document.createElement('div');
+                card.onclick = () => toggleRound1Abandon(idx);
+                card.className = `p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
+                    isAbandoned ? 'abandoned-wish' : 'bg-cosmic-900/80 border-slate-700 hover:border-gold-400/60'
+                }`;
+
+                card.innerHTML = `
+                    <div class="flex items-center space-x-3 pr-2">
+                        <span class="w-6 h-6 rounded-full ${isAbandoned ? 'bg-red-900 text-red-300' : 'bg-slate-800 text-gold-400'} font-bold text-xs flex items-center justify-center flex-shrink-0">
+                            ${idx + 1}
+                        </span>
+                        <span class="text-sm font-semibold text-slate-200 ${isAbandoned ? 'line-through text-red-300' : ''}">
+                            ${w.text}
+                        </span>
+                    </div>
+                    <div>
+                        ${isAbandoned ? 
+                            '<span class="text-xs text-red-400 font-bold px-2 py-1 rounded bg-red-950 border border-red-800">已劃線淘汰</span>' : 
+                            '<span class="text-xs text-slate-400 hover:text-white">點擊淘汰 ❌</span>'}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            document.getElementById('round1AbandonCount').innerText = round1AbandonedIndices.length;
+            const btn = document.getElementById('btnProceedRound2');
+            if (round1AbandonedIndices.length === 4) {
+                btn.disabled = false;
+                btn.className = "px-8 py-3.5 bg-gradient-to-r from-gold-500 to-amber-400 hover:from-gold-400 hover:to-yellow-300 text-cosmic-900 font-extrabold rounded-xl text-base shadow-lg cursor-pointer transition-all";
+            } else {
+                btn.disabled = true;
+                btn.className = "px-8 py-3.5 bg-slate-700 text-slate-400 font-extrabold rounded-xl text-base cursor-not-allowed transition-all";
+            }
+        }
+
+        function toggleRound1Abandon(idx) {
+            const pos = round1AbandonedIndices.indexOf(idx);
+            if (pos !== -1) {
+                round1AbandonedIndices.splice(pos, 1);
+            } else {
+                if (round1AbandonedIndices.length >= 4) {
+                    showAlert("淘汰數量已達上限", "第一輪需劃線淘汰 4 個願望！如需更換，請先取消點擊已被淘汰的項目。");
+                    return;
+                }
+                round1AbandonedIndices.push(idx);
+            }
+            renderRound1Wishes();
+        }
+
+        function startRound2() {
+            if (round1AbandonedIndices.length !== 4) return;
+            round2AbandonedIndices = [];
+            renderRound2Wishes();
+            goToStep(3);
+        }
+
+        // --- ROUND 2 ELIMINATION ---
+        function renderRound2Wishes() {
+            const grid = document.getElementById('round2WishGrid');
+            grid.innerHTML = '';
+
+            // Remaining 6 wishes indices
+            const remainingIndices = [];
+            studentWishes.forEach((_, idx) => {
+                if (!round1AbandonedIndices.includes(idx)) {
+                    remainingIndices.push(idx);
+                }
+            });
+
+            remainingIndices.forEach((idx) => {
+                const w = studentWishes[idx];
+                const isAbandoned = round2AbandonedIndices.includes(idx);
+
+                const card = document.createElement('div');
+                card.onclick = () => toggleRound2Abandon(idx);
+                card.className = `p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
+                    isAbandoned ? 'abandoned-wish' : 'bg-cosmic-900/80 border-slate-700 hover:border-gold-400/60'
+                }`;
+
+                card.innerHTML = `
+                    <div class="flex items-center space-x-3 pr-2">
+                        <span class="w-6 h-6 rounded-full ${isAbandoned ? 'bg-red-900 text-red-300' : 'bg-amber-900/60 text-gold-300'} font-bold text-xs flex items-center justify-center flex-shrink-0">
+                            ${idx + 1}
+                        </span>
+                        <span class="text-sm font-semibold text-slate-200 ${isAbandoned ? 'line-through text-red-300' : ''}">
+                            ${w.text}
+                        </span>
+                    </div>
+                    <div>
+                        ${isAbandoned ? 
+                            '<span class="text-xs text-red-400 font-bold px-2 py-1 rounded bg-red-950 border border-red-800">已劃線淘汰</span>' : 
+                            '<span class="text-xs text-slate-400 hover:text-white">點擊淘汰 ❌</span>'}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            document.getElementById('round2AbandonCount').innerText = round2AbandonedIndices.length;
+            const btn = document.getElementById('btnProceedFinal');
+            if (round2AbandonedIndices.length === 3) {
+                btn.disabled = false;
+                btn.className = "px-8 py-3.5 bg-gradient-to-r from-gold-500 to-amber-400 hover:from-gold-400 hover:to-yellow-300 text-cosmic-900 font-extrabold rounded-xl text-base shadow-lg cursor-pointer transition-all";
+            } else {
+                btn.disabled = true;
+                btn.className = "px-8 py-3.5 bg-slate-700 text-slate-400 font-extrabold rounded-xl text-base cursor-not-allowed transition-all";
+            }
+        }
+
+        function toggleRound2Abandon(idx) {
+            const pos = round2AbandonedIndices.indexOf(idx);
+            if (pos !== -1) {
+                round2AbandonedIndices.splice(pos, 1);
+            } else {
+                if (round2AbandonedIndices.length >= 3) {
+                    showAlert("淘汰數量已達上限", "第二輪需再劃線淘汰 3 個願望！如需更換，請先取消點擊已被淘汰的項目。");
+                    return;
+                }
+                round2AbandonedIndices.push(idx);
+            }
+            renderRound2Wishes();
+        }
+
+        // --- STEP 4: FINAL CONFIRMATION ---
+        function showFinalConfirmation() {
+            if (round2AbandonedIndices.length !== 3) return;
+
+            const retainedContainer = document.getElementById('finalRetainedWishes');
+            const abandonedContainer = document.getElementById('finalAbandonedWishes');
+            retainedContainer.innerHTML = '';
+            abandonedContainer.innerHTML = '';
+
+            const allAbandonedIndices = [...round1AbandonedIndices, ...round2AbandonedIndices];
+
+            studentWishes.forEach((w, idx) => {
+                if (!allAbandonedIndices.includes(idx)) {
+                    // Retained
+                    const card = document.createElement('div');
+                    card.className = "bg-gradient-to-b from-amber-950/70 to-cosmic-900 p-4 rounded-xl border border-gold-400/60 shadow-lg flex flex-col justify-between";
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs bg-gold-400 text-cosmic-900 px-2 py-0.5 rounded font-extrabold">核心願望</span>
+                            <span class="text-[10px] text-amber-300">${w.isCustom ? '⭐ 自訂填寫' : '標籤帶入'}</span>
+                        </div>
+                        <p class="text-sm sm:text-base font-bold text-white leading-snug mb-2">${w.text}</p>
+                    `;
+                    retainedContainer.appendChild(card);
+                } else {
+                    // Abandoned
+                    const chip = document.createElement('span');
+                    chip.className = "text-xs px-2.5 py-1 rounded bg-red-950/60 text-red-300 border border-red-900/60 line-through opacity-80";
+                    chip.innerText = w.text;
+                    abandonedContainer.appendChild(chip);
+                }
+            });
+
+            goToStep(4);
+        }
+
+        function submitStudentChoice() {
+            const className = document.getElementById('inputClass').value;
+            const studentId = document.getElementById('inputId').value.trim();
+            const name = document.getElementById('inputName').value.trim();
+
+            const allAbandonedIndices = [...round1AbandonedIndices, ...round2AbandonedIndices];
+            
+            const retainedWishes = [];
+            const abandonedWishes = [];
+
+            studentWishes.forEach((w, idx) => {
+                if (allAbandonedIndices.includes(idx)) {
+                    abandonedWishes.push(w.text);
+                } else {
+                    retainedWishes.push(w.text);
+                }
+            });
+
+            const record = {
+                id: Date.now().toString(),
+                className,
+                studentId,
+                name,
+                wishes: studentWishes,
+                retainedWishes,
+                abandonedWishes,
+                timestamp: Date.now()
+            };
+
+            // Save to server via API
+            try {
+                await postRaw({ eventType: 'submission', ...record });
+                document.getElementById('studentSuccessModal').classList.remove('hidden');
+            } catch (e) {
+                showAlert("提交失敗", e.message || "無法將資料傳送至伺服器，請稍後重試！");
+            }
+        }
+
+        function resetStudentFormAndHome() {
+            document.getElementById('studentSuccessModal').classList.add('hidden');
+            document.getElementById('inputClass').value = '';
+            document.getElementById('inputId').value = '';
+            document.getElementById('inputName').value = '';
+            studentWishes = Array(10).fill(null).map(() => ({ text: '', isCustom: true }));
+            for (let i = 0; i < 10; i++) {
+                document.getElementById(`wishInput-${i}`).value = '';
+                updateWishSlotBadge(i, true);
+            }
+            highlightPresetTags();
+            updateWishCounts();
+            switchView('portalView');
+        }
+
+
+        // ================= TEACHER DASHBOARD LOGIC =================
+
+        function requestTeacherAuth() {
+            currentAuthAction = 'ENTER_TEACHER';
+            document.getElementById('pwdModalTitle').innerText = '教師端安全驗證';
+            document.getElementById('pwdModalSubtitle').innerText = '請輸入教師密碼以進入儀表板大屏';
+            document.getElementById('teacherPasswordInput').value = '';
+            document.getElementById('pwdErrorMsg').classList.add('hidden');
+            document.getElementById('passwordModal').classList.remove('hidden');
+        }
+
+        function requestResetDataAuth() {
+            currentAuthAction = 'RESET_DATA';
+            document.getElementById('pwdModalTitle').innerText = '重置數據安全確認';
+            document.getElementById('pwdModalSubtitle').innerText = '此操作將徹底清空所有學生提交數據，請再次輸入教師密碼';
+            document.getElementById('teacherPasswordInput').value = '';
+            document.getElementById('pwdErrorMsg').classList.add('hidden');
+            document.getElementById('passwordModal').classList.remove('hidden');
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.add('hidden');
+        }
+
+        function handlePasswordSubmit(e) {
+            e.preventDefault();
+            const val = document.getElementById('teacherPasswordInput').value;
+            try {
+                const result = await apiFetch('/api/teacher/verify', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ password: val })
+                });
+                if (result.ok) {
+                    sessionStorage.setItem('genie:teacherKey:' + INSTANCE_ID, val);
+                    closePasswordModal();
+                    if (currentAuthAction === 'ENTER_TEACHER') {
+                        switchView('teacherView');
+                    } else if (currentAuthAction === 'RESET_DATA') {
+                        await postRaw({ eventType: 'activity_reset', instanceId: INSTANCE_ID, resetAt: Date.now() });
+                        loadTeacherDashboardData();
+                        showAlert("重置成功", "已清空所有學生提交數據！");
+                    }
+                } else {
+                    document.getElementById('pwdErrorMsg').classList.remove('hidden');
+                }
+            } catch (err) {
+                document.getElementById('pwdErrorMsg').classList.remove('hidden');
+                console.error('驗證失敗:', err);
+            }
+        }
+
+        async function loadTeacherDashboardData() {
+            let data = [];
+            try {
+                const result = await apiFetch('/api/events?instanceId=' + encodeURIComponent(INSTANCE_ID));
+                data = (result.items || []).map(item => item.data);
+            } catch (e) {
+                console.error('載入教師數據失敗:', e);
+                data = [];
+            }
+            
+            // Total submission count
+            document.getElementById('statTotalCount').innerText = `${data.length} 人`;
+
+            if (data.length === 0) {
+                document.getElementById('statTopCoreWish').innerText = '尚無數據';
+                document.getElementById('statTopAbandonedWish').innerText = '尚無數據';
+                document.getElementById('topRetainedList').innerHTML = '<p class="text-xs text-slate-400 py-4 text-center">暫無學生提交資料</p>';
+                document.getElementById('topAbandonedList').innerHTML = '<p class="text-xs text-slate-400 py-4 text-center">暫無學生提交資料</p>';
+                return;
+            }
+
+            // Frequency maps
+            const retainedMap = {};
+            const abandonedMap = {};
+
+            data.forEach(item => {
+                (item.retainedWishes || []).forEach(w => {
+                    retainedMap[w] = (retainedMap[w] || 0) + 1;
+                });
+                (item.abandonedWishes || []).forEach(w => {
+                    abandonedMap[w] = (abandonedMap[w] || 0) + 1;
+                });
+            });
+
+            // Sort Top 5 Retained
+            const sortedRetained = Object.entries(retainedMap).sort((a, b) => b[1] - a[1]);
+            const sortedAbandoned = Object.entries(abandonedMap).sort((a, b) => b[1] - a[1]);
+
+            if (sortedRetained.length > 0) {
+                document.getElementById('statTopCoreWish').innerText = sortedRetained[0][0];
+            }
+            if (sortedAbandoned.length > 0) {
+                document.getElementById('statTopAbandonedWish').innerText = sortedAbandoned[0][0];
+            }
+
+            // Render Top 5 Retained List
+            const topRetainedContainer = document.getElementById('topRetainedList');
+            topRetainedContainer.innerHTML = '';
+            sortedRetained.slice(0, 5).forEach(([wish, count], index) => {
+                const percentage = Math.round((count / data.length) * 100);
+                const item = document.createElement('div');
+                item.className = "bg-cosmic-900/90 border border-slate-700/80 rounded-xl p-3";
+                item.innerHTML = `
+                    <div class="flex justify-between items-center mb-1 text-xs">
+                        <span class="font-bold text-white flex items-center">
+                            <span class="w-5 h-5 rounded bg-gold-400/20 text-gold-300 text-[11px] flex items-center justify-center mr-2 font-black">${index + 1}</span>
+                            ${wish}
+                        </span>
+                        <span class="text-gold-400 font-bold">${count} 人 (${percentage}%)</span>
+                    </div>
+                    <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                        <div class="bg-gradient-to-r from-gold-500 to-amber-300 h-1.5 rounded-full" style="width: ${percentage}%"></div>
+                    </div>
+                `;
+                topRetainedContainer.appendChild(item);
+            });
+
+            // Render Top 5 Abandoned List
+            const topAbandonedContainer = document.getElementById('topAbandonedList');
+            topAbandonedContainer.innerHTML = '';
+            sortedAbandoned.slice(0, 5).forEach(([wish, count], index) => {
+                const percentage = Math.round((count / data.length) * 100);
+                const item = document.createElement('div');
+                item.className = "bg-cosmic-900/90 border border-slate-700/80 rounded-xl p-3";
+                item.innerHTML = `
+                    <div class="flex justify-between items-center mb-1 text-xs">
+                        <span class="font-bold text-slate-300 flex items-center">
+                            <span class="w-5 h-5 rounded bg-red-900/40 text-red-300 text-[11px] flex items-center justify-center mr-2 font-black">${index + 1}</span>
+                            ${wish}
+                        </span>
+                        <span class="text-red-400 font-bold">${count} 人 (${percentage}%)</span>
+                    </div>
+                    <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                        <div class="bg-gradient-to-r from-red-600 to-red-400 h-1.5 rounded-full" style="width: ${percentage}%"></div>
+                    </div>
+                `;
+                topAbandonedContainer.appendChild(item);
+            });
+        }
+
+        // --- RANDOM LOTTERY REVEAL ---
+        async function drawRandomStudent() {
+            let data = [];
+            try {
+                const result = await apiFetch('/api/events?instanceId=' + encodeURIComponent(INSTANCE_ID));
+                data = (result.items || []).map(item => item.data);
+            } catch (e) {
+                console.error('載入抽籤數據失敗:', e);
+                data = [];
+            }
+            if (data.length === 0) {
+                showAlert("暫無數據", "目前尚無任何學生提交數據，無法抽籤！");
+                return;
+            }
+
+            const filterGrade = document.getElementById('lotteryGradeFilter').value;
+            let filteredData = data;
+
+            if (filterGrade !== 'ALL') {
+                filteredData = data.filter(item => item.className.startsWith(filterGrade));
+            }
+
+            if (filteredData.length === 0) {
+                showAlert("查無符合資料", `【${filterGrade}】目前沒有已提交數據的學生！`);
+                return;
+            }
+
+            const randomIndex = Math.floor(Math.random() * filteredData.length);
+            const luckyStudent = filteredData[randomIndex];
+
+            // Populate Modal
+            document.getElementById('lotteryStudentHeader').innerText = `${luckyStudent.className} (${luckyStudent.studentId}號) - ${luckyStudent.name}`;
+
+            // Retained Wishes
+            const retainedContainer = document.getElementById('lotteryRetainedContainer');
+            retainedContainer.innerHTML = '';
+            luckyStudent.retainedWishes.forEach((w, idx) => {
+                const card = document.createElement('div');
+                card.className = "bg-amber-950/60 border border-gold-400/80 p-3 rounded-xl text-center shadow";
+                card.innerHTML = `
+                    <span class="text-[10px] bg-gold-400 text-cosmic-900 font-bold px-2 py-0.5 rounded">核心願望 #${idx + 1}</span>
+                    <p class="text-xs sm:text-sm font-bold text-white mt-2">${w}</p>
+                `;
+                retainedContainer.appendChild(card);
+            });
+
+            // Abandoned Wishes
+            const abandonedContainer = document.getElementById('lotteryAbandonedContainer');
+            abandonedContainer.innerHTML = '';
+            luckyStudent.abandonedWishes.forEach((w) => {
+                const chip = document.createElement('span');
+                chip.className = "text-xs px-2.5 py-1 rounded bg-red-950/60 text-red-300 border border-red-900/60 line-through opacity-80";
+                chip.innerText = w;
+                abandonedContainer.appendChild(chip);
+            });
+
+            // Initial 10 Wishes List with Custom Highlight
+            const initialContainer = document.getElementById('lotteryInitialWishesContainer');
+            initialContainer.innerHTML = '';
+            luckyStudent.wishes.forEach((wObj, idx) => {
+                const item = document.createElement('div');
+                const isCustom = wObj.isCustom;
+                item.className = `p-2 rounded-lg border flex items-center justify-between ${
+                    isCustom ? 'bg-amber-400/10 border-gold-400/50 text-gold-200' : 'bg-slate-800/80 border-slate-700 text-slate-300'
+                }`;
+                item.innerHTML = `
+                    <span class="truncate pr-2">${idx + 1}. ${wObj.text}</span>
+                    <span class="text-[10px] flex-shrink-0 font-bold ${isCustom ? 'text-amber-300' : 'text-slate-400'}">
+                        ${isCustom ? '⭐ 自訂' : '預設'}
+                    </span>
+                `;
+                initialContainer.appendChild(item);
+            });
+
+            document.getElementById('lotteryModal').classList.remove('hidden');
+        }
+
+        function closeLotteryModal() {
+            document.getElementById('lotteryModal').classList.add('hidden');
+        }
+
+        // Custom Alert Dialog Helper
+        function showAlert(title, body) {
+            document.getElementById('alertTitle').innerText = title;
+            document.getElementById('alertBody').innerText = body;
+            document.getElementById('alertModal').classList.remove('hidden');
+        }
+
+        function closeAlertModal() {
+            document.getElementById('alertModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

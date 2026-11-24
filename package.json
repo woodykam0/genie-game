@@ -1,0 +1,12 @@
+{
+  "name": "genie-game-classroom",
+  "version": "1.0.0",
+  "private": true,
+  "description": "神燈遊戲：自我實踐 — 高中課堂互動平台（可供全班同時使用，學生端資料即時同步至教師控制台）",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
